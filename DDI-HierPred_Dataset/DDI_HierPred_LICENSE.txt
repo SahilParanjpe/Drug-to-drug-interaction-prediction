@@ -1,0 +1,46 @@
+DDI-HierPred — Code and Repository Licensing Notice
+
+Copyright (c) 2026 DDI-HierPred authors.
+
+1.  AUTHOR-GENERATED CODE Code developed specifically by the authors for
+    DDI-HierPred is released under the MIT License:
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of the author-generated software and associated documentation files
+(the “Software”), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+2.  THIRD-PARTY DATA This licence does not apply to third-party data or
+    content incorporated into, referenced by, or underlying the
+    processed datasets.
+
+DrugBank-derived, DeepDDI-associated, Kaggle-hosted, and other
+third-party resources remain subject to the terms, licences, and
+redistribution permissions of their respective original providers.
+
+For upstream resources whose data cards report the licence as “Unknown”,
+the DDI-HierPred authors do not grant, infer, or assert redistribution
+rights on behalf of the original provider.
+
+3.  DERIVED/PROCESSED RESEARCH FILES Author-generated organization,
+    preprocessing logic, annotations, split definitions, validation
+    outputs, and code are provided to support reproducibility. Their
+    deposition does not transfer ownership of underlying third-party
+    source content or supersede the original providers’ conditions.
+
+Users are responsible for verifying that their intended reuse of
+third-party-derived material complies with the applicable source terms.

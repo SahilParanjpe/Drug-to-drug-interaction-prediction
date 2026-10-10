@@ -1,0 +1,43 @@
+DDI-HierPred — Source Data Provenance Notes
+
+This file records only provenance information that can be supported from
+the project records currently available. Historical metadata that were
+not preserved are explicitly identified as such rather than
+reconstructed retrospectively.
+
+1.  Large-scale DDI interaction table Local file: all_id_interaction.csv
+    Source: Kaggle dataset “drugbank-ddi” Content: Drug1 ID, interaction
+    description, Drug2 ID Current data-card version observed during
+    revision: Version 15 Licence shown by Kaggle: Unknown Historical
+    download date: Not retained Important note: the currently displayed
+    version is reported for transparency and is not asserted to be the
+    exact historical version originally downloaded.
+
+2.  DrugBank ID–SMILES table Local file: drugbank_smiles.csv Source:
+    Kaggle dataset “Drug Bank Dataset excel file” Current data-card
+    version observed during revision: Version 1 Licence shown by Kaggle:
+    Unknown Historical download date: Not retained
+
+3.  DeepDDI-associated / DrugBank-derived local resources Local files
+    include:
+
+-   DrugBank_known_ddi.txt
+-   Interaction_information.txt
+-   Approved_drug_enzyme_Information.txt
+-   Drug_Side_Effect.txt
+
+These files were used as DrugBank-derived/DeepDDI-associated resources
+during dataset construction. The exact historical source
+snapshot/version and download date were not preserved in the local
+project metadata. Accordingly, no unsupported version number or download
+date is assigned in this repository.
+
+4.  Author-generated derived resources Files generated during the study
+    include PK/PD mappings, cleaned interaction tables, harmonized
+    DrugBank ID–SMILES mappings, canonical drug-pair tables, train/test
+    partitions, model inputs, validation outputs, and audit tables.
+
+Licensing note: The authors’ software licence applies only to
+author-generated code and material for which the authors hold the
+necessary rights. Third-party source data remain governed by their
+original providers.

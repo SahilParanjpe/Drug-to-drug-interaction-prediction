@@ -1,0 +1,20 @@
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Checkpoints
+.ipynb_checkpoints/
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Large Files (>100MB exceeding GitHub limit)
+*DDI_known_lookup.csv
+*.rar
+
+# OS specific files
+Thumbs.db
+.DS_Store

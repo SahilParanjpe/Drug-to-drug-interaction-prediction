@@ -1,0 +1,20 @@
+{
+    "dataset": "DDI-HierPred Level 1 (PK vs PD)",
+    "features": "Morgan Fingerprints (radius=2, bits=2048, chirality=True, pair_dim=4096)",
+    "train_samples": 30000,
+    "test_samples": 5000,
+    "svm": {
+        "model": "CalibratedClassifierCV(LinearSVC)",
+        "accuracy": 0.8496,
+        "roc_auc": 0.9243,
+        "f1": 0.8631,
+        "train_time_sec": 21.63
+    },
+    "rf": {
+        "model": "RandomForestClassifier(n_estimators=100, max_depth=20)",
+        "accuracy": 0.7872,
+        "roc_auc": 0.8747,
+        "f1": 0.8226,
+        "train_time_sec": 3.92
+    }
+}
