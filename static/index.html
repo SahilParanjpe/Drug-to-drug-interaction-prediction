@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DDI Prediction Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800">
+  <header class="bg-indigo-700 px-6 py-6 text-white shadow">
+    <div class="mx-auto max-w-7xl">
+      <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">🧬 DDI Prediction Pipeline</h1>
+      <p class="mt-2 text-sm text-indigo-100">Pairwise drug–drug interaction predictions using DrugBank names, synonyms, and canonical SMILES.</p>
+    </div>
+  </header>
+
+  <main class="mx-auto grid w-full max-w-7xl flex-1 grid-cols-1 gap-6 px-4 py-8 lg:grid-cols-3">
+    <section class="h-fit rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 class="mb-5 border-b border-slate-200 pb-3 text-lg font-semibold">Analysis configuration</h2>
+      <form id="predictionForm" class="space-y-5">
+        <div>
+          <label for="drugInput" class="mb-1 block text-sm font-medium">Drug names or DrugBank IDs</label>
+          <textarea id="drugInput" rows="6" required
+            class="w-full rounded-lg border border-slate-300 p-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+            placeholder="Aspirin, Paracetamol&#10;Ibuprofen&#10;DB00945"></textarea>
+          <p class="mt-1 text-xs text-slate-500">Separate entries with commas or new lines. Enter 2–100 entries.</p>
+        </div>
+
+        <div>
+          <label for="classifier" class="mb-1 block text-sm font-medium">Classifier</label>
+          <select id="classifier" class="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
+            <option value="rf">Random Forest (RF)</option>
+            <option value="xgb">XGBoost (XGB)</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="featureType" class="mb-1 block text-sm font-medium">Feature extraction pipeline</label>
+          <select id="featureType" class="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
+            <option value="custom32_wl">Custom 32 + Weisfeiler–Lehman (WL)</option>
+            <option value="custom32">Custom 32 features</option>
+            <option value="morgan">Morgan fingerprints</option>
+          </select>
+        </div>
+
+        <button id="submitBtn" type="submit"
+          class="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 font-medium text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60">
+          <span id="buttonLabel">Run analysis</span>
+        </button>
+        <p class="text-xs leading-5 text-slate-500">The first request for a model may take longer while that model is loaded.</p>
+      </form>
+    </section>
+
+    <section class="space-y-5 lg:col-span-2">
+      <div id="errorAlert" class="hidden rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800" role="alert"></div>
+
+      <div id="missingAlert" class="hidden rounded-lg border border-amber-200 bg-amber-50 p-4">
+        <h3 class="font-semibold text-amber-900">Unrecognized drugs</h3>
+        <ul id="missingList" class="mt-2 list-inside list-disc text-sm text-amber-800"></ul>
+      </div>
+
+      <div id="summary" class="hidden rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <p id="summaryText" class="text-sm text-slate-700"></p>
+        <p class="mt-2 text-xs leading-5 text-slate-500">Research prediction only. A predicted non-interaction does not establish that a combination is safe. Consult a qualified healthcare professional before making medication decisions.</p>
+      </div>
+
+      <div id="resultsCard" class="hidden grid-cols-1 gap-5 md:grid-cols-2">
+        <section class="flex h-[480px] flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 class="mb-3 flex items-center justify-between text-lg font-semibold text-rose-700">
+            <span>⚡ Predicted interactions</span>
+            <span id="interactionCount" class="rounded-full bg-rose-100 px-2 py-0.5 text-xs text-rose-800">0</span>
+          </h2>
+          <div id="interactionsContainer" class="flex-1 space-y-3 overflow-y-auto pr-1"></div>
+        </section>
+
+        <section class="flex h-[480px] flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 class="mb-3 flex items-center justify-between text-lg font-semibold text-emerald-700">
+            <span>Predicted non-interactions</span>
+            <span id="nonInteractionCount" class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-800">0</span>
+          </h2>
+          <div id="nonInteractionsContainer" class="flex-1 space-y-3 overflow-y-auto pr-1"></div>
+        </section>
+      </div>
+
+      <div id="predictionErrors" class="hidden rounded-lg border border-amber-200 bg-amber-50 p-4">
+        <h3 class="font-semibold text-amber-900">Pairs that could not be processed</h3>
+        <ul id="predictionErrorList" class="mt-2 list-inside list-disc text-sm text-amber-800"></ul>
+      </div>
+
+      <div id="placeholderState" class="flex min-h-[360px] flex-col items-center justify-center rounded-xl border border-slate-200 bg-white p-10 text-center shadow-sm">
+        <div class="mb-4 text-5xl">🧪</div>
+        <h2 class="font-semibold text-slate-700">No predictions generated yet</h2>
+        <p class="mt-2 max-w-md text-sm text-slate-500">Enter at least two drugs, select a model configuration, and run the analysis.</p>
+      </div>
+    </section>
+  </main>
+
+<script>
+const API_URL = "/predict";
+const form = document.getElementById("predictionForm");
+const submitBtn = document.getElementById("submitBtn");
+const buttonLabel = document.getElementById("buttonLabel");
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  await runPrediction();
+});
+
+function showError(message) {
+  const box = document.getElementById("errorAlert");
+  box.textContent = message;
+  box.classList.remove("hidden");
+}
+function hideError() {
+  const box = document.getElementById("errorAlert");
+  box.textContent = "";
+  box.classList.add("hidden");
+}
+function listItems(container, items) {
+  container.replaceChildren();
+  for (const item of items) {
+    const li = document.createElement("li");
+    li.textContent = String(item);
+    container.appendChild(li);
+  }
+}
+function pairCard(pair, interacting) {
+  const card = document.createElement("article");
+  card.className = `rounded-lg border p-3 ${interacting ? "border-rose-100 bg-rose-50/50" : "border-emerald-100 bg-emerald-50/50"}`;
+
+  const title = document.createElement("div");
+  title.className = "flex flex-wrap items-start justify-between gap-2 text-sm font-semibold text-slate-800";
+  const names = document.createElement("span");
+  names.textContent = `${pair.drug_a.name} ↔ ${pair.drug_b.name}`;
+  const score = document.createElement("span");
+  score.className = `rounded px-2 py-0.5 font-mono text-xs ${interacting ? "bg-rose-100 text-rose-800" : "bg-emerald-100 text-emerald-800"}`;
+  score.textContent = pair.confidence_score == null ? "Score: unavailable" : `Score: ${(Number(pair.confidence_score) * 100).toFixed(1)}%`;
+  title.append(names, score);
+
+  const ids = document.createElement("p");
+  ids.className = "mt-2 break-words text-xs text-slate-500";
+  ids.textContent = `DrugBank IDs: ${pair.drug_a.id} · ${pair.drug_b.id}`;
+  card.append(title, ids);
+  return card;
+}
+function renderPairs(container, pairs, interacting) {
+  container.replaceChildren();
+  if (!pairs.length) {
+    const empty = document.createElement("p");
+    empty.className = "py-8 text-center text-sm text-slate-400";
+    empty.textContent = "No pairs in this category.";
+    container.appendChild(empty);
+    return;
+  }
+  for (const pair of pairs) container.appendChild(pairCard(pair, interacting));
+}
+function errorMessage(data) {
+  const detail = data?.detail;
+  if (typeof detail === "string") return detail;
+  if (detail && typeof detail === "object") return detail.error || JSON.stringify(detail);
+  return "An error occurred while predicting interactions.";
+}
+
+async function runPrediction() {
+  hideError();
+  const drugs = document.getElementById("drugInput").value
+    .split(/[,\n]+/).map(value => value.trim()).filter(Boolean);
+  const classifier = document.getElementById("classifier").value;
+  const featureType = document.getElementById("featureType").value;
+
+  if (drugs.length < 2) {
+    showError("Please enter at least two drug names or DrugBank IDs.");
+    return;
+  }
+  if (drugs.length > 100) {
+    showError("Please enter no more than 100 drug entries per request.");
+    return;
+  }
+
+  submitBtn.disabled = true;
+  buttonLabel.textContent = "Processing…";
+  document.getElementById("missingAlert").classList.add("hidden");
+  document.getElementById("predictionErrors").classList.add("hidden");
+
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({drugs, classifier, feature_type: featureType})
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(errorMessage(data));
+
+    document.getElementById("placeholderState").classList.add("hidden");
+    document.getElementById("resultsCard").classList.remove("hidden");
+    document.getElementById("resultsCard").classList.add("grid");
+
+    const missing = data.missing_drugs || [];
+    if (missing.length) {
+      document.getElementById("missingAlert").classList.remove("hidden");
+      listItems(document.getElementById("missingList"), missing);
+    }
+
+    const interactions = data.interactions || [];
+    const nonInteractions = data.non_interactions || [];
+    document.getElementById("interactionCount").textContent = interactions.length;
+    document.getElementById("nonInteractionCount").textContent = nonInteractions.length;
+    renderPairs(document.getElementById("interactionsContainer"), interactions, true);
+    renderPairs(document.getElementById("nonInteractionsContainer"), nonInteractions, false);
+
+    document.getElementById("summary").classList.remove("hidden");
+    document.getElementById("summaryText").textContent =
+      `Model: ${data.model_used}. Resolved drugs: ${data.resolved_drug_count}. ` +
+      `Predicted interactions: ${interactions.length}. Predicted non-interactions: ${nonInteractions.length}.`;
+
+    const errors = data.prediction_errors || [];
+    if (errors.length) {
+      document.getElementById("predictionErrors").classList.remove("hidden");
+      listItems(document.getElementById("predictionErrorList"),
+        errors.map(e => `${e.drug_a} ↔ ${e.drug_b}: ${e.error}`));
+    }
+  } catch (error) {
+    showError(error.message || "Could not connect to the backend server.");
+  } finally {
+    submitBtn.disabled = false;
+    buttonLabel.textContent = "Run analysis";
+  }
+}
+</script>
+</body>
+</html>

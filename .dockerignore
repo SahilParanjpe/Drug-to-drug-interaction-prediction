@@ -1,0 +1,11 @@
+.git
+.gitignore
+.venv
+venv
+__pycache__
+*.py[cod]
+.pytest_cache
+.DS_Store
+# Model and data files are downloaded by the Dockerfile.
+data/
+models/
