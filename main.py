@@ -3,7 +3,7 @@ from itertools import combinations
 from pathlib import Path
 from threading import Lock
 import importlib
-
+import gc
 import joblib
 import pandas as pd
 from fastapi import FastAPI, HTTPException
@@ -230,16 +230,30 @@ def get_model(model_key):
     global _cached_model_key, _cached_model
 
     with _model_lock:
+        # Return the model if the requested model is already cached.
         if _cached_model_key == model_key and _cached_model is not None:
             return _cached_model
 
+        # Release the previously cached model before loading another.
+        _cached_model = None
+        _cached_model_key = None
+        gc.collect()
+
         path = MODEL_FILES[model_key]
+
         try:
             loaded = joblib.load(path)
             model = unwrap_predictor(loaded, path.name)
-        except HTTPException:
-            raise
+
+            # Remove the temporary reference to the loaded object.
+            del loaded
+            gc.collect()
+
         except Exception as exc:
+            _cached_model = None
+            _cached_model_key = None
+            gc.collect()
+
             raise HTTPException(
                 status_code=500,
                 detail=(
@@ -248,10 +262,11 @@ def get_model(model_key):
                 ),
             ) from exc
 
+        # Cache only the newly selected model.
         _cached_model_key = model_key
         _cached_model = model
-        return model
 
+        return _cached_model
 
 class PredictionRequest(BaseModel):
     drugs: list[str] = Field(min_length=2, max_length=100)
